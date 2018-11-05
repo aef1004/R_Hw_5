@@ -1,6 +1,6 @@
 ---
 title: "Hw_5"
-author: "Amy Fox"
+author: "Amy Fox Randy Xun Ana Velasquez"
 date: "November 5, 2018"
 output: html_document
 ---
@@ -9,11 +9,15 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+Hello!
+
 
 ```{r}
 library(readr)
 library(dplyr)
 library(sf)
+library(tigris)
+
 ```
 
 #Part 3#
