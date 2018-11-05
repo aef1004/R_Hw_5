@@ -1,6 +1,6 @@
 ---
 title: "Hw_5"
-author: "Amy Fox"
+author: "Amy Fox Randy Xun"
 date: "November 5, 2018"
 output: html_document
 ---
