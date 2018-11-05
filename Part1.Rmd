@@ -1,6 +1,6 @@
 ---
 title: "Hw_5"
-author: "Ana Velasquez"
+author: "Amy Fox Randy Xun Ana Velasquez"
 date: "November 5, 2018"
 output: html_document
 ---
