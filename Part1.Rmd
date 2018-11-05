@@ -12,6 +12,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(readr)
+library(dplyr)
+library(sf)
 ```
 
 #Part 3#
@@ -22,6 +24,16 @@ Pick one city in the data. Create a map showing the locations of the homicides i
 homicides <- read_csv("./data/homicide-data.csv")
 ```
 
+```{r}
+homicides %>%
+  filter(city == "Houston") %>%
+  select(victim_race, lat, lon, disposition) %>%
+  mutate(unsolved = disposition != "Closed by arrest")
+
+
+#view the race groups
+unique(homicides$victim_race)
+```
 
 
 #Part 4
