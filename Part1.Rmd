@@ -17,6 +17,7 @@ library(readr)
 library(dplyr)
 library(sf)
 library(tigris)
+library(ggplot2)
 
 ```
 
@@ -26,19 +27,44 @@ Pick one city in the data. Create a map showing the locations of the homicides i
 
 ```{r}
 homicides <- read_csv("./data/homicide-data.csv")
+
+head(homicides)
 ```
 
+Need to filter out lat and lon NA
 ```{r}
-homicides %>%
+homicides <- homicides %>%
   filter(city == "Houston") %>%
   select(victim_race, lat, lon, disposition) %>%
-  mutate(unsolved = disposition != "Closed by arrest")
+  mutate(unsolved = disposition != "Closed by arrest") %>%
+  filter(!is.na(lon), !is.na(lat))
 
 
 #view the race groups
 unique(homicides$victim_race)
 ```
 
+Pull counties, plot the locations of homicides over it 
+
+```{r}
+
+TX_counties <- counties("TX", cb = TRUE, class = "sf") 
+
+Houston_sf <- TX_counties %>%
+  filter(NAME == "Harris")
+
+#is this st_set_Crs correct? How do you find it?
+homicides_sf <- st_as_sf(homicides,
+                         coords = c("lon", "lat")) %>%
+  st_set_crs(4326)
+
+ggplot() +
+  geom_sf(data = Houston_sf) +
+  geom_sf(data = homicides_sf, aes(color = victim_race))
+
+
+
+```
 
 #Part 4
 
