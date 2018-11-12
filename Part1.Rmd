@@ -31,7 +31,7 @@ homicides <- read_csv("./data/homicide-data.csv")
 head(homicides)
 ```
 
-Need to filter out lat and lon NA
+Need to filter out lat and lon NA to work on geom_sf
 ```{r}
 homicides <- homicides %>%
   filter(city == "Houston") %>%
@@ -42,6 +42,19 @@ homicides <- homicides %>%
 
 #view the race groups
 unique(homicides$victim_race)
+
+homicides %>%
+  group_by(victim_race) %>%
+  summarise(total = n()) %>%
+  arrange(desc(total))
+
+head(homicides)
+
+Houston_homicides <- homicides %>%
+  filter(victim_race == "Black"| victim_race ==  "Hispanic" | victim_race == "White") 
+
+head(Houston_homicides)
+# top 3 races are Black, Hispanic, White
 ```
 
 Pull counties, plot the locations of homicides over it 
@@ -53,16 +66,21 @@ TX_counties <- counties("TX", cb = TRUE, class = "sf")
 Houston_sf <- TX_counties %>%
   filter(NAME == "Harris")
 
+Houston_roads <- primary_secondary_roads(state = "TX")
+
+head(Houston_roads)
+
 #is this st_set_Crs correct? How do you find it?
-homicides_sf <- st_as_sf(homicides,
+homicides_sf <- st_as_sf(Houston_homicides,
                          coords = c("lon", "lat")) %>%
   st_set_crs(4326)
 
-ggplot() +
+# facet wrap based on if the case is solved or unsolved
+ggplot(Houston_homicides) +
+  facet_wrap(~unsolved) +
   geom_sf(data = Houston_sf) +
+  geom_sf(data = Houston_roads)
   geom_sf(data = homicides_sf, aes(color = victim_race))
-
-
 
 ```
 
