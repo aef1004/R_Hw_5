@@ -9,16 +9,15 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Hello!
 
-
+Load necessary packages
 ```{r}
 library(readr)
 library(dplyr)
 library(sf)
 library(tigris)
 library(ggplot2)
-
+library(forcats)
 ```
 
 #Part 3#
@@ -32,6 +31,16 @@ head(homicides)
 ```
 
 Need to filter out lat and lon NA to work on geom_sf
+
+Alternative for fct_lump
+
+homicides %>%
+  group_by(victim_race) %>%
+  summarise(total = n()) %>%
+  arrange(desc(total))
+
+Houston_homicides <- homicides %>%
+  filter(victim_race == "Black"| victim_race ==  "Hispanic" | victim_race == "White") 
 ```{r}
 homicides <- homicides %>%
   filter(city == "Houston") %>%
@@ -39,50 +48,38 @@ homicides <- homicides %>%
   mutate(unsolved = disposition != "Closed by arrest") %>%
   filter(!is.na(lon), !is.na(lat))
 
+Houston_homicides <- homicides %>%  
+  mutate(victim_race_factor = fct_lump(as.factor(victim_race), n = 3))
 
-#view the race groups
-unique(homicides$victim_race)
 
-homicides %>%
-  group_by(victim_race) %>%
-  summarise(total = n()) %>%
-  arrange(desc(total))
-
-head(homicides)
-
-Houston_homicides <- homicides %>%
-  filter(victim_race == "Black"| victim_race ==  "Hispanic" | victim_race == "White") 
-
-head(Houston_homicides)
-# top 3 races are Black, Hispanic, White
 ```
 
 Pull counties, plot the locations of homicides over it 
 
 ```{r}
 
-TX_counties <- counties("TX", cb = TRUE, class = "sf") 
-
-Houston_sf <- TX_counties %>%
-  filter(NAME == "Harris")
-
-Houston_roads <- primary_secondary_roads(state = "TX")
-
-head(Houston_roads)
-
 #is this st_set_Crs correct? How do you find it?
 homicides_sf <- st_as_sf(Houston_homicides,
                          coords = c("lon", "lat")) %>%
   st_set_crs(4326)
 
-# facet wrap based on if the case is solved or unsolved
-ggplot(Houston_homicides) +
-  facet_wrap(~unsolved) +
-  geom_sf(data = Houston_sf) +
-  geom_sf(data = Houston_roads)
-  geom_sf(data = homicides_sf, aes(color = victim_race))
+TX_tracts <- tracts("Texas", county = "Harris County", cb = TRUE) 
+
+TX_tracts <- st_as_sf(TX_tracts)
+
+facet_names <- c("TRUE" = "Unsolved Homicides",
+                 "FALSE" = "Solved Homicides")
+
+ggplot(homicides_sf) +
+  facet_wrap(~unsolved, nrow = 2, 
+             labeller = as_labeller(facet_names)) +
+  geom_sf(data = TX_tracts) +
+  geom_sf(data = homicides_sf, aes(color = victim_race_factor), size = 0.1) +
+  ggtitle("Homicides in Houston, TX")
 
 ```
+
+
 
 #Part 4
 
