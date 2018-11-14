@@ -88,3 +88,5 @@ Recreate the graph shown below. It shows monthly homicides in Baltimore, with a 
 #Part 5
 
 Create one more plot using this data. Work with your group to create a plot that follows the principles of good plotting and that you think illustrates something interesting in the data. Write a paragraph explaining what the plot is showing and why you find it interesting.
+
+For this part of the assignment, our group looked at how the percentage of unsolved murders in the major cities changed from the first year of the study (2010) to the last year of the study (2016). This finding is interesting because it could potentially show which police forces are getting better at solving murders. At the same time, this graph can help identify cities which are declining over time.
