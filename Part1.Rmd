@@ -52,7 +52,7 @@ Houston_homicides <- homicides %>%
 
 Convert Houston homicides to an sf object. Get the tracts (subdivisions)  and bodies of water for the different counties in Houston and convert the sp objects to sf objects. Create pretty names for the facet wrapping headers. Finally, plot the homicide data facet wrapping by the unsolved vs solved cases overlayed onto the tracts and bodies of water.  
 
-```{r fig. width = 10, fig.height = 9}
+```{r fig.width = 10, fig.height = 9}
 
 homicides_sf <- st_as_sf(Houston_homicides,
                          coords = c("lon", "lat")) %>%
