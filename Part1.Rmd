@@ -2,7 +2,9 @@
 title: "Hw_5"
 author: "Amy Fox Randy Xun Ana Velasquez"
 date: "November 5, 2018"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -21,6 +23,7 @@ library(ggthemes)
 library(lubridate)
 library(tidyr)
 library(zoo)
+library(knitr)
 ```
 
 # Part 3
@@ -52,7 +55,7 @@ Houston_homicides <- homicides %>%
 
 Convert Houston homicides to an sf object. Get the tracts (subdivisions)  and bodies of water for the different counties in Houston and convert the sp objects to sf objects. Create pretty names for the facet wrapping headers. Finally, plot the homicide data facet wrapping by the unsolved vs solved cases overlayed onto the tracts and bodies of water.  
 
-```{r fig. width = 10, fig.height = 9}
+```{r, fig.width = 10, fig.height = 9}
 
 homicides_sf <- st_as_sf(Houston_homicides,
                          coords = c("lon", "lat")) %>%
@@ -142,7 +145,7 @@ freddie <- freddie %>%
 head(freddie)
 
 ```
-```{r, Plot, fig.width = 15, fig.height = 5 }
+```{r, plot, fig.width = 15, fig.height = 5 }
 
 baltimore %>% 
   ggplot() +
@@ -158,7 +161,7 @@ baltimore %>%
   geom_vline(data = freddie, xintercept = (freddie$dates), 
              color = "red", linetype = "dashed", size = 1.5) +
   geom_text(data = freddie, aes(x = dates, y = n, label = "Arrest of 
-                                Freddie Gray"), size=7, hjust= 1, 
+                                Freddie Grey"), size=7, hjust= 1, 
                                 vjust=-1.7, colour= "white")
 
 
