@@ -21,6 +21,9 @@ library(ggthemes)
 library(lubridate)
 library(tidyr)
 library(zoo)
+library(rgeos)
+library(broom)
+library(purrr)
 ```
 
 # Part 3
@@ -58,13 +61,9 @@ homicides_sf <- st_as_sf(Houston_homicides,
                          coords = c("lon", "lat")) %>%
   st_set_crs(4326)
 
-TX_tracts <- tracts("Texas", county = c("Harris County", "Brazoria", "Fort Bend", 
-                                        "Montgomery", "Liberty", "Waller"), cb = TRUE) 
-
+TX_tracts <- tracts("Texas", county = c("Harris County", "Brazoria", "Fort Bend", "Montgomery", "Liberty", "Waller"), cb = TRUE) 
 TX_tracts <- st_as_sf(TX_tracts)
-
-Houston_water <- area_water("Texas", county = c("Harris County", "Brazoria", "Fort Bend", 
-                                        "Montgomery", "Liberty", "Waller"))
+Houston_water <- area_water("Texas", county = c("Harris County", "Brazoria", "Fort Bend", "Montgomery", "Liberty", "Waller"))
 
 Houston_water <- st_as_sf(Houston_water)
 
@@ -169,10 +168,6 @@ baltimore %>%
 Create one more plot using this data. Work with your group to create a plot that follows the principles of good plotting and that you think illustrates something interesting in the data. Write a paragraph explaining what the plot is showing and why you find it interesting.
 
 ```{r q5_cleanup}
-library(tidyr)
-library(lubridate)
-library(broom)
-library(purrr)
 
 homicides3 <- homicides3 %>% 
   unite(col = city_name, city, state, sep = ", ") %>% 
