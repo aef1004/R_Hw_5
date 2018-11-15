@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
 Load necessary packages
@@ -17,6 +17,10 @@ library(sf)
 library(tigris)
 library(ggplot2)
 library(forcats)
+library(ggthemes)
+library(lubridate)
+library(tidyr)
+library(zoo)
 ```
 
 # Part 3
@@ -26,6 +30,7 @@ library(forcats)
 Read in homicide data
 ```{r}
 homicides <- read_csv("./data/homicide-data.csv")
+homicides_4 <- homicides
 homicides3 <- homicides
 head(homicides)
 
@@ -84,6 +89,41 @@ ggplot(homicides_sf) +
 #Part 4
 
 Recreate the graph shown below. It shows monthly homicides in Baltimore, with a reference added for the date of the arrest of Freddie Gray and color used to show colder months (November through April) versus warmer months (May through October). There is a smooth line added to help show seasonal and long-term trends in this data
+
+```{r, Baltimore, MD dataset}
+#Selecting Baltimore data and adding season (Winter or Summer).
+
+baltimore <- homicides_4 %>% 
+  unite(city_names, city, state, sep = ",") %>% 
+  unite(victim_name, victim_first, victim_last, sep =" ") %>% 
+  select(reported_date, city_names) %>% 
+  filter(city_names == "Baltimore,MD") %>% 
+  mutate(reported_date = ymd(reported_date)) %>%
+  mutate(dates = as.yearmon(reported_date))
+seasons = function(x){
+  if(x %in% 5:10) return("Summer")
+  if(x %in% c(11,12,1,2,3,4)) return("Winter")
+}
+baltimore$season = sapply(month(baltimore$reported_date), seasons)
+
+#Counting Baltimorehomicides cases by month/year.
+
+counts_homicides <- baltimore %>% 
+  group_by(dates) %>% 
+  count() %>% 
+  ungroup()
+
+#Joining Baltomore data with homicides cases,
+
+baltimore<-baltimore %>% 
+  right_join(counts_homicides, by = "dates") 
+
+#Selecting unique values per month
+
+baltimore <- unique(data.frame(event_date = baltimore$dates, event_count = baltimore$n, season = baltimore$season))
+
+```
+
 
 #Part 5
 
