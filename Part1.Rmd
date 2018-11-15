@@ -9,7 +9,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
 Load necessary packages
 ```{r}
 library(readr)
@@ -20,27 +19,21 @@ library(ggplot2)
 library(forcats)
 ```
 
-#Part 3#
+# Part 3
 
-Pick one city in the data. Create a map showing the locations of the homicides in that city, using the sf framework discussed in class. Use tigris to download boundaries for some sub-city geography (e.g., tracts, block groups, county subdivisions) to show as a layer underneath the points showing homicides. Use different facets for solved versus unsolved homicides and different colors to show the three race groups with the highest number of homicides for that city (you may find the fct_lump function from forcats useful for this).
+**Pick one city in the data. Create a map showing the locations of the homicides in that city, using the sf framework discussed in class. Use tigris to download boundaries for some sub-city geography (e.g., tracts, block groups, county subdivisions) to show as a layer underneath the points showing homicides. Use different facets for solved versus unsolved homicides and different colors to show the three race groups with the highest number of homicides for that city (you may find the fct_lump function from forcats useful for this).**
 
+Read in homicide data
 ```{r}
 homicides <- read_csv("./data/homicide-data.csv")
 
 head(homicides)
+
 ```
 
-Need to filter out lat and lon NA to work on geom_sf
+Filter homicide data to only homicides in houston. Remove unnecessary columns. Create an unsolved logical column for the homicides that are unsolved. Remove rows that do not contain latitidue or longitude data
 
-Alternative for fct_lump
-
-homicides %>%
-  group_by(victim_race) %>%
-  summarise(total = n()) %>%
-  arrange(desc(total))
-
-Houston_homicides <- homicides %>%
-  filter(victim_race == "Black"| victim_race ==  "Hispanic" | victim_race == "White") 
+Add another column that takes the 3 races with the highest homicide numbers
 ```{r}
 homicides <- homicides %>%
   filter(city == "Houston") %>%
@@ -50,34 +43,41 @@ homicides <- homicides %>%
 
 Houston_homicides <- homicides %>%  
   mutate(victim_race_factor = fct_lump(as.factor(victim_race), n = 3))
-
-
 ```
 
-Pull counties, plot the locations of homicides over it 
+Convert Houston homicides to an sf object. Get the tracts (subdivisions)  and bodies of water for the different counties in Houston and convert the sp objects to sf objects. Create pretty names for the facet wrapping headers. Finally, plot the homicide data facet wrapping by the unsolved vs solved cases overlayed onto the tracts and bodies of water.  
 
-```{r}
+```{r fig. width = 10, fig.height = 9}
 
-#is this st_set_Crs correct? How do you find it?
 homicides_sf <- st_as_sf(Houston_homicides,
                          coords = c("lon", "lat")) %>%
   st_set_crs(4326)
 
-TX_tracts <- tracts("Texas", county = "Harris County", cb = TRUE) 
+TX_tracts <- tracts("Texas", county = c("Harris County", "Brazoria", "Fort Bend", 
+                                        "Montgomery", "Liberty", "Waller"), cb = TRUE) 
 
 TX_tracts <- st_as_sf(TX_tracts)
+
+Houston_water <- area_water("Texas", county = c("Harris County", "Brazoria", "Fort Bend", 
+                                        "Montgomery", "Liberty", "Waller"))
+
+Houston_water <- st_as_sf(Houston_water)
 
 facet_names <- c("TRUE" = "Unsolved Homicides",
                  "FALSE" = "Solved Homicides")
 
 ggplot(homicides_sf) +
-  facet_wrap(~unsolved, nrow = 2, 
+  facet_wrap(~unsolved, ncol = 2, 
              labeller = as_labeller(facet_names)) +
   geom_sf(data = TX_tracts) +
-  geom_sf(data = homicides_sf, aes(color = victim_race_factor), size = 0.1) +
+  geom_sf(data = Houston_water, color = "blue4" ) +
+  geom_sf(data = homicides_sf, aes(color = victim_race_factor), size = .3) +
+  coord_sf(xlim = c(-95.8, -95), ylim = c(29.55, 30.1)) +
+  labs(fill = "Victim Race") +
   ggtitle("Homicides in Houston, TX")
 
 ```
+
 
 
 
