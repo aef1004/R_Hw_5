@@ -26,7 +26,7 @@ library(forcats)
 Read in homicide data
 ```{r}
 homicides <- read_csv("./data/homicide-data.csv")
-
+homicides3 <- homicides
 head(homicides)
 
 ```
@@ -89,4 +89,67 @@ Recreate the graph shown below. It shows monthly homicides in Baltimore, with a 
 
 Create one more plot using this data. Work with your group to create a plot that follows the principles of good plotting and that you think illustrates something interesting in the data. Write a paragraph explaining what the plot is showing and why you find it interesting.
 
-For this part of the assignment, our group looked at how the percentage of unsolved murders in the major cities changed from the first year of the study (2010) to the last year of the study (2016). This finding is interesting because it could potentially show which police forces are getting better at solving murders. At the same time, this graph can help identify cities which are declining over time.
+```{r q5_cleanup}
+library(tidyr)
+library(lubridate)
+library(broom)
+library(purrr)
+
+homicides3 <- homicides3 %>% 
+  unite(col = city_name, city, state, sep = ", ") %>% 
+  mutate(reported_date = ymd(reported_date)) %>% 
+  arrange(reported_date)
+
+homi2017 <- filter(homicides3, reported_date >= ymd(20170101) & 
+                     reported_date <= ymd(20171231))
+
+homi2007 <- filter(homicides3, reported_date >= ymd(20070101) & 
+                     reported_date <= ymd(20071231))
+
+unsolved2017 <- homi2017 %>% 
+  select(city_name, disposition) %>% 
+  group_by(city_name) %>% 
+  mutate(unsolved = disposition != 'Closed by arrest') %>% 
+  summarize(total_homicides17 = n(),
+            total_unsolved17 = sum(unsolved))
+
+unsolved2007 <- homi2007 %>% 
+  select(city_name, disposition) %>% 
+  group_by(city_name) %>% 
+  mutate(unsolved = disposition != 'Closed by arrest') %>% 
+  summarize(total_homicides07 = n(),
+            total_unsolved07 = sum(unsolved))
+
+combo_unsolved <- inner_join(unsolved2017, unsolved2007)
+
+
+proportion_unsolved2017 <- unsolved2017 %>% 
+  mutate(test = map2(total_unsolved17, total_homicides17,
+                     ~ prop.test(.x, n = .y))) %>% 
+  mutate(test = map(test,
+                    ~ tidy(.x))) %>% 
+  unnest(.drop = TRUE) %>% 
+  select(city_name, estimate)
+
+proportion_unsolved2007 <- unsolved2007 %>% 
+  mutate(test = map2(total_unsolved07, total_homicides07,
+                     ~ prop.test(.x, n = .y))) %>% 
+  mutate(test = map(test,
+                    ~ tidy(.x))) %>% 
+  unnest(.drop = TRUE) %>% 
+  select(city_name, estimate)
+
+combo_proportion <- inner_join(proportion_unsolved2017, proportion_unsolved2007,
+                               by = "city_name")
+diff_proportion <- combo_proportion %>% 
+  mutate(diff_percent = (estimate.x - estimate.y))   
+```
+
+```{r custom_graph}
+diff_proportion %>% 
+  mutate(city_name = fct_reorder(city_name, diff_percent)) %>% 
+  ggplot(aes(x = diff_percent, y = city_name)) +
+  geom_point(color= "white") +
+  theme_dark() 
+```
+For this part of the assignment, our group looked at how the percentage of unsolved murders in the major cities changed from the first year of the study (2007) to the last year of the study (2017). This finding is interesting because it could potentially show which police forces are getting better at solving murders. At the same time, this graph can help identify cities which are declining over time.
