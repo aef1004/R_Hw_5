@@ -141,6 +141,25 @@ freddie <- freddie %>%
 head(freddie)
 
 ```
+```{r, Plot, fig.width = 15, fig.height = 5 }
+
+baltimore %>% 
+  ggplot()+
+  geom_bar(aes(x=event_date, y=event_count, fill= season), 
+           stat="identity") +
+  scale_fill_manual(values = c("cornsilk3", "cadetblue3"))+
+  geom_smooth( aes(x = event_date, y = event_count),method="loess", se=FALSE, span=0.1, size = 1.2)+
+  labs(x = "Date", y = "Monthly homicides", fill = " ") +
+   theme_dark()+
+   theme(legend.position = "bottom")+
+  ggtitle("Homicides in Baltimore, MD")+
+  geom_vline(data = freddie, xintercept = (freddie$dates), color = "red", linetype = "dashed", size = 1.5) +
+  geom_text(data = freddie, aes(x=dates, y= n, label="Arrest of 
+                                Freddie Gray"), size=7, hjust= 1,
+            vjust=-1.7, colour= "white")
+
+
+```
 
 #Part 5
 
