@@ -83,26 +83,25 @@ ggplot(homicides_sf) +
 
 ```
 
-
-
-
 #Part 4
 
 Recreate the graph shown below. It shows monthly homicides in Baltimore, with a reference added for the date of the arrest of Freddie Gray and color used to show colder months (November through April) versus warmer months (May through October). There is a smooth line added to help show seasonal and long-term trends in this data
 
 ```{r, Baltimore, MD dataset}
+
 #Selecting Baltimore data and adding season (Winter or Summer).
 
 baltimore <- homicides_4 %>% 
   unite(city_names, city, state, sep = ",") %>% 
-  unite(victim_name, victim_first, victim_last, sep =" ") %>% 
+  unite(victim_name, victim_first, victim_last, sep = " ") %>% 
   select(reported_date, city_names) %>% 
   filter(city_names == "Baltimore,MD") %>% 
   mutate(reported_date = ymd(reported_date)) %>%
   mutate(dates = as.yearmon(reported_date))
-seasons = function(x){
-  if(x %in% 5:10) return("Summer")
-  if(x %in% c(11,12,1,2,3,4)) return("Winter")
+
+seasons = function(x) {
+  if(x %in% 5:10) return ("Summer")
+  if(x %in% c(11,12,1,2,3,4)) return ("Winter")
 }
 baltimore$season = sapply(month(baltimore$reported_date), seasons)
 
@@ -113,14 +112,16 @@ counts_homicides <- baltimore %>%
   count() %>% 
   ungroup()
 
-#Joining Baltomore data with homicides cases,
+#Joining Baltomore data with homicides cases.
 
 baltimore<-baltimore %>% 
   right_join(counts_homicides, by = "dates") 
 
 #Selecting unique values per month
 
-baltimore <- unique(data.frame(event_date = baltimore$dates, event_count = baltimore$n, season = baltimore$season))
+baltimore <- unique(data.frame(event_date = baltimore$dates, 
+                               event_count = baltimore$n, 
+                               season = baltimore$season))
 
 head(baltimore)
 
@@ -130,13 +131,13 @@ head(baltimore)
 #Creating an object called "Freddie" to add to the final plot.
 
 freddie <- homicides_4 %>% 
-  unite(victim_name, victim_first, victim_last, sep =" ") %>% 
+  unite(victim_name, victim_first, victim_last, sep = " ") %>% 
   select(reported_date, victim_name) %>% 
   mutate(reported_date = ymd(reported_date)) %>%
   mutate(dates = as.yearmon(reported_date))  
  
 freddie <- freddie %>% 
-  right_join(counts_homicides, by ="dates") %>% 
+  right_join(counts_homicides, by = "dates") %>% 
   filter(victim_name == "FREDDIE CARLOS GREY")
 head(freddie)
 
@@ -144,19 +145,21 @@ head(freddie)
 ```{r, Plot, fig.width = 15, fig.height = 5 }
 
 baltimore %>% 
-  ggplot()+
-  geom_bar(aes(x=event_date, y=event_count, fill= season), 
+  ggplot() +
+  geom_bar(aes(x = event_date, y = event_count, fill = season), 
            stat="identity") +
-  scale_fill_manual(values = c("cornsilk3", "cadetblue3"))+
-  geom_smooth( aes(x = event_date, y = event_count),method="loess", se=FALSE, span=0.1, size = 1.2)+
+  scale_fill_manual(values = c("cornsilk3", "cadetblue3")) +
+  geom_smooth( aes(x = event_date, y = event_count),
+               method = "loess", se=FALSE, span=0.1, size = 1.2) +
   labs(x = "Date", y = "Monthly homicides", fill = " ") +
-   theme_dark()+
-   theme(legend.position = "bottom")+
-  ggtitle("Homicides in Baltimore, MD")+
-  geom_vline(data = freddie, xintercept = (freddie$dates), color = "red", linetype = "dashed", size = 1.5) +
-  geom_text(data = freddie, aes(x=dates, y= n, label="Arrest of 
-                                Freddie Gray"), size=7, hjust= 1,
-            vjust=-1.7, colour= "white")
+  theme_dark() +
+  theme(legend.position = "bottom") +
+  ggtitle("Homicides in Baltimore, MD") +
+  geom_vline(data = freddie, xintercept = (freddie$dates), 
+             color = "red", linetype = "dashed", size = 1.5) +
+  geom_text(data = freddie, aes(x = dates, y = n, label = "Arrest of 
+                                Freddie Gray"), size=7, hjust= 1, 
+                                vjust=-1.7, colour= "white")
 
 
 ```
