@@ -120,16 +120,13 @@ unsolved2007 <- homi2007 %>%
   summarize(total_homicides07 = n(),
             total_unsolved07 = sum(unsolved))
 
-combo_unsolved <- inner_join(unsolved2017, unsolved2007)
-
-
 proportion_unsolved2017 <- unsolved2017 %>% 
   mutate(test = map2(total_unsolved17, total_homicides17,
                      ~ prop.test(.x, n = .y))) %>% 
   mutate(test = map(test,
                     ~ tidy(.x))) %>% 
   unnest(.drop = TRUE) %>% 
-  select(city_name, estimate)
+  select(city_name, estimate, total_homicides17)
 
 proportion_unsolved2007 <- unsolved2007 %>% 
   mutate(test = map2(total_unsolved07, total_homicides07,
@@ -137,12 +134,23 @@ proportion_unsolved2007 <- unsolved2007 %>%
   mutate(test = map(test,
                     ~ tidy(.x))) %>% 
   unnest(.drop = TRUE) %>% 
-  select(city_name, estimate)
+  select(city_name, estimate, total_homicides07)
 
 combo_proportion <- inner_join(proportion_unsolved2017, proportion_unsolved2007,
                                by = "city_name")
+
 diff_proportion <- combo_proportion %>% 
-  mutate(diff_percent = (estimate.x - estimate.y))   
+  mutate(diff_percent = (estimate.x - estimate.y))
+
+diff_proportion <- diff_proportion %>% 
+  mutate(x_min = (diff_percent - 
+          2.575 * sqrt((estimate.x * (1-estimate.x)/total_homicides17)
+          + (estimate.y*(1-estimate.y)/total_homicides07)))) %>% 
+  mutate(x_max = (diff_percent + 
+          2.575 * sqrt((estimate.x * (1-estimate.x)/total_homicides17)
+          + (estimate.y*(1-estimate.y)/total_homicides07))))
+
+
 ```
 
 ```{r custom_graph}
@@ -150,6 +158,16 @@ diff_proportion %>%
   mutate(city_name = fct_reorder(city_name, diff_percent)) %>% 
   ggplot(aes(x = diff_percent, y = city_name)) +
   geom_point(color= "white") +
-  theme_dark() 
+  theme_dark() +
+  labs(title = "Increases in unsolved homicides percentage by city", 
+     subtitle = " Difference between 2017 and 2007", 
+     y = NULL, x = "Percent of homicides that are unsolved") +
+  scale_x_continuous(limits = c(-0.5, 1.25),
+                 breaks = c(-0.5, -0.25, 0, 0.25, 0.5, 0.75, 1.0, 1.25)) +
+  geom_errorbarh(color = "white", 
+                 aes(y = city_name, xmin = x_min,
+                     xmax = x_max, height = 0)) +
+  geom_vline(xintercept = 0, color = "white")
+
 ```
-For this part of the assignment, our group looked at how the percentage of unsolved murders in the major cities changed from the first year of the study (2007) to the last year of the study (2017). This finding is interesting because it could potentially show which police forces are getting better at solving murders. At the same time, this graph can help identify cities which are declining over time.
+For this part of the assignment, our group looked at how the percentage of unsolved murders in the major cities changed from the first year of the study (2007) to the last year of the study (2017). This finding is interesting because it could potentially show which police forces are getting better at solving murders. At the same time, this graph can help identify cities which are declining over time. As you can see by this graph, with the help of the error bars and the white vertical line indicating no change, only Philadelphia, PA has significantly improved, statistically, its ability to solved homicides in 10 years time.
