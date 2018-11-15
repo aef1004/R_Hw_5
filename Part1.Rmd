@@ -122,8 +122,25 @@ baltimore<-baltimore %>%
 
 baltimore <- unique(data.frame(event_date = baltimore$dates, event_count = baltimore$n, season = baltimore$season))
 
+head(baltimore)
+
 ```
 
+```{r, Freddie}
+#Creating an object called "Freddie" to add to the final plot.
+
+freddie <- homicides_4 %>% 
+  unite(victim_name, victim_first, victim_last, sep =" ") %>% 
+  select(reported_date, victim_name) %>% 
+  mutate(reported_date = ymd(reported_date)) %>%
+  mutate(dates = as.yearmon(reported_date))  
+ 
+freddie <- freddie %>% 
+  right_join(counts_homicides, by ="dates") %>% 
+  filter(victim_name == "FREDDIE CARLOS GREY")
+head(freddie)
+
+```
 
 #Part 5
 
