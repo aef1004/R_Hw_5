@@ -58,7 +58,7 @@ Houston_homicides <- homicides %>%
 ```
 
 
-```{r results = FALSE}
+```{r results = "hide"}
 TX_tracts <- tracts("Texas", county = c("Harris County", "Brazoria", "Fort Bend", "Montgomery", 
                                         "Liberty", "Waller"),
                     cb = TRUE) 
