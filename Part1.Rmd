@@ -57,19 +57,28 @@ Houston_homicides <- homicides %>%
   mutate(victim_race_factor = fct_lump(as.factor(victim_race), n = 3))
 ```
 
+
+```{r results = FALSE}
+TX_tracts <- tracts("Texas", county = c("Harris County", "Brazoria", "Fort Bend", "Montgomery", 
+                                        "Liberty", "Waller"),
+                    cb = TRUE) 
+TX_tracts <- st_as_sf(TX_tracts)
+Houston_water <- area_water("Texas", county = c("Harris County", "Brazoria", "Fort Bend",
+                                                "Montgomery", "Liberty", "Waller"))
+
+Houston_water <- st_as_sf(Houston_water)
+```
+
 Convert Houston homicides to an sf object. Get the tracts (subdivisions)  and bodies of water for the different counties in Houston and convert the sp objects to sf objects. Create pretty names for the facet wrapping headers. Finally, plot the homicide data facet wrapping by the unsolved vs solved cases overlayed onto the tracts and bodies of water.  
 
 
-```{r, fig.width = 10, fig.height = 9}
+
+```{r, fig.width = 7, fig.height = 9, message = FALSE }
 homicides_sf <- st_as_sf(Houston_homicides,
                          coords = c("lon", "lat")) %>%
   st_set_crs(4326)
 
-TX_tracts <- tracts("Texas", county = c("Harris County", "Brazoria", "Fort Bend", "Montgomery", "Liberty", "Waller"), cb = TRUE) 
-TX_tracts <- st_as_sf(TX_tracts)
-Houston_water <- area_water("Texas", county = c("Harris County", "Brazoria", "Fort Bend", "Montgomery", "Liberty", "Waller"))
 
-Houston_water <- st_as_sf(Houston_water)
 
 facet_names <- c("TRUE" = "Unsolved Homicides",
                  "FALSE" = "Solved Homicides")
@@ -79,14 +88,14 @@ ggplot(homicides_sf) +
              labeller = as_labeller(facet_names)) +
   geom_sf(data = TX_tracts) +
   geom_sf(data = Houston_water, color = "blue4" ) +
-  geom_sf(data = homicides_sf, aes(color = victim_race_factor), size = .3) +
+  geom_sf(data = homicides_sf, aes(color = victim_race_factor), size = .5) +
   coord_sf(xlim = c(-95.8, -95), ylim = c(29.55, 30.1)) +
   labs(fill = "Victim Race") +
   ggtitle("Homicides in Houston, TX")
 
 ```
 
-#Part 4
+# Part 4
 
 Recreate the graph shown below. It shows monthly homicides in Baltimore, with a reference added for the date of the arrest of Freddie Gray and color used to show colder months (November through April) versus warmer months (May through October). There is a smooth line added to help show seasonal and long-term trends in this data
 
@@ -167,7 +176,7 @@ baltimore %>%
 
 ```
 
-#Part 5
+# Part 5
 
 Create one more plot using this data. Work with your group to create a plot that follows the principles of good plotting and that you think illustrates something interesting in the data. Write a paragraph explaining what the plot is showing and why you find it interesting.
 
